@@ -136,25 +136,5 @@ Use `<ErrorDisplay />` component from `src/shared/components/ErrorDisplay.tsx`
 ### Notifications
 Global toast notifications are configured via React Hot Toast
 
-## Step 0 Acceptance Criteria ✅
-
-- ✅ `pnpm dev` runs successfully
-- ✅ `/devices` route shows placeholder
-- ✅ API functions exist (mock) with proper types
-- ✅ React Router configured with `<Outlet/>`
-- ✅ React Query configured with `QueryClientProvider`
-- ✅ Global loading/error display components
-- ✅ Proper folder structure: /app, /features, /shared
-
-## Next Steps
-
-**Step 1 - Device List:**
-- Implement actual device list with data fetching
-- Add search functionality
-- Add status badges
-- Add pagination
-- Add loading skeleton and error states with retry
-
----
 
 **Commit checkpoint:** `chore: bootstrap app with router + query + mock api`
