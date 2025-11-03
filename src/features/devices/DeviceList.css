@@ -1,0 +1,58 @@
+.device-list {
+  width: 100%;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  color: #1e40af;
+  margin: 0 0 0.5rem 0;
+}
+
+.page-description {
+  color: #6b7280;
+  margin: 0;
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.placeholder-content h2 {
+  color: #374151;
+  margin: 0 0 1rem 0;
+}
+
+.placeholder-content p {
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+.placeholder-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.placeholder-feature {
+  color: #059669;
+  font-weight: 500;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
