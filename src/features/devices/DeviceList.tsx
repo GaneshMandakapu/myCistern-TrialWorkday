@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, Mic, Wifi, WifiOff } from 'lucide-react';
-import { getDevices } from '../../api/client';
+import { getDevices, type Device } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
 import EmptyState from '../../shared/components/EmptyState';
@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import './DeviceList.css';
 
 function DeviceList() {
   const { t } = useTranslation();
@@ -60,14 +59,21 @@ function DeviceList() {
 
   const handleVoiceSearch = () => {
     // Check if browser supports speech recognition
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    interface WindowWithSpeechRecognition extends Window {
+      SpeechRecognition?: unknown;
+      webkitSpeechRecognition?: unknown;
+    }
     
-    if (!SpeechRecognition) {
+    const windowWithSpeech = window as WindowWithSpeechRecognition;
+    const SpeechRecognitionClass = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
+    
+    if (!SpeechRecognitionClass) {
       alert('Voice search is not supported in your browser. Please try Chrome, Edge, or Safari.');
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition = new (SpeechRecognitionClass as any)();
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -76,12 +82,14 @@ function DeviceList() {
       setIsListening(true);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       setSearchQuery(transcript);
       setIsListening(false);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
@@ -189,7 +197,7 @@ function DeviceList() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {devices!.map((device) => (
+              {devices!.map((device: Device) => (
                 <Card 
                   key={device.id}
                   className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
@@ -199,10 +207,10 @@ function DeviceList() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <CardTitle className="text-lg leading-none">
-                          {t(`deviceName.${device.name}`, device.name)}
+                          {t(`deviceName.${device.name}`, device.name) as string}
                         </CardTitle>
                         <CardDescription className="text-sm">
-                          {t(`deviceType.${device.type}`, device.type)}
+                          {t(`deviceType.${device.type}`, device.type) as string}
                         </CardDescription>
                       </div>
                       <Badge 
@@ -221,7 +229,7 @@ function DeviceList() {
                   <CardContent className="space-y-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>📍</span>
-                      <span>{t(`location.${device.location}`, device.location)}</span>
+                      <span>{t(`location.${device.location}`, device.location) as string}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>⏰</span>

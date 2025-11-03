@@ -3,14 +3,13 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Wifi, WifiOff, Thermometer, Droplet, Gauge, Battery, Signal, Power, RefreshCw, Settings, AlertTriangle, Loader2 } from 'lucide-react';
 import { getDeviceDetails, getDeviceMetrics, postDeviceCommand } from '../../api/client';
-import type { DeviceCommand } from '../../api/client';
+import type { DeviceCommand, CommandResponse } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import './DeviceDetail.css';
 
 function DeviceDetail() {
   const { t } = useTranslation();
@@ -42,12 +41,12 @@ function DeviceDetail() {
   });
 
   // Command mutation
-  const commandMutation = useMutation({
+  const commandMutation = useMutation<CommandResponse, Error, DeviceCommand>({
     mutationFn: (command: DeviceCommand) => {
       console.log('🚀 Mutation started:', command.command);
       return postDeviceCommand(command);
     },
-    onSuccess: (response) => {
+    onSuccess: (response: CommandResponse) => {
       console.log('✨ Mutation success:', response);
       if (response.success) {
         toast({

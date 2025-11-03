@@ -8,7 +8,6 @@ import DeviceDetail from './features/devices/DeviceDetail';
 import CookiePolicy from './pages/CookiePolicy';
 import NotFound from './shared/components/NotFound';
 import ErrorBoundary from './shared/components/ErrorBoundary';
-import './App.css';
 
 // Create a client for React Query
 const queryClient = new QueryClient({

@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, BarChart3, Search, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import './Home.css';
 
 function Home() {
   const { t } = useTranslation();

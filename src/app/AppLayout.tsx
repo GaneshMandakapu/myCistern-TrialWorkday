@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import ThemeToggle from '../shared/components/ThemeToggle';
 import CookieBanner from '../shared/components/CookieBanner';
 import { useCookieConsent } from '../hooks/useCookieConsent';
-import './AppLayout.css';
 
 function AppLayout() {
   const { t } = useTranslation();

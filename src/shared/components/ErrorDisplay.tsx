@@ -1,8 +1,10 @@
 // Shared error display component
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, RefreshCw, WifiOff, AlertCircle } from 'lucide-react';
+import { AlertTriangle, RefreshCw, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import './ErrorDisplay.css';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface ErrorDisplayProps {
   message?: string;
@@ -43,17 +45,25 @@ function ErrorDisplay({
   };
 
   const getIcon = () => {
-    const iconSize = size === 'small' ? 32 : size === 'large' ? 64 : 48;
+    const iconClasses = cn(
+      size === 'small' ? 'h-8 w-8' : size === 'large' ? 'h-16 w-16' : 'h-12 w-12',
+      {
+        'text-red-500': variant === 'error',
+        'text-orange-500': variant === 'warning', 
+        'text-blue-500': variant === 'info',
+        'text-gray-500': variant === 'network'
+      }
+    );
     
     switch (variant) {
       case 'network':
-        return <WifiOff size={iconSize} />;
+        return <WifiOff className={iconClasses} />;
       case 'warning':
-        return <AlertCircle size={iconSize} />;
+        return <AlertCircle className={iconClasses} />;
       case 'info':
-        return <AlertCircle size={iconSize} />;
+        return <AlertCircle className={iconClasses} />;
       default:
-        return <AlertTriangle size={iconSize} />;
+        return <AlertTriangle className={iconClasses} />;
     }
   };
 
@@ -81,37 +91,63 @@ function ErrorDisplay({
 
   const canRetry = onRetry && (!showRetryCount || retryCount < maxRetries);
   
+  const containerClasses = cn(
+    'text-center space-y-4',
+    size === 'small' ? 'p-4' : size === 'large' ? 'p-12' : 'p-8'
+  );
+  
   return (
-    <div className={`error-container error-${variant} error-${size}`}>
-      <div className="error-icon">
-        {getIcon()}
-      </div>
-      <h3 className="error-title">{title || getDefaultTitle()}</h3>
-      <p className="error-message">{getDefaultMessage()}</p>
-      
-      {showRetryCount && retryCount > 0 && (
-        <p className="retry-count">
-          {t('error.retryCount', { count: retryCount, max: maxRetries })}
-        </p>
-      )}
-      
-      {canRetry && (
-        <button 
-          onClick={handleRetry} 
-          disabled={isRetrying}
-          className={`retry-button ${isRetrying ? 'retrying' : ''}`}
-        >
-          <RefreshCw size={20} className={isRetrying ? 'spinning' : ''} />
-          {retryLabel || (isRetrying ? t('error.network.retrying') : t('error.retry'))}
-        </button>
-      )}
-      
-      {showRetryCount && retryCount >= maxRetries && (
-        <p className="max-retries-message">
-          {t('error.maxRetries')}
-        </p>
-      )}
-    </div>
+    <Card className="border-dashed">
+      <CardContent className={containerClasses}>
+        <div className="flex justify-center">
+          {getIcon()}
+        </div>
+        
+        <div className="space-y-2">
+          <h3 className={cn(
+            'font-semibold',
+            size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg'
+          )}>
+            {title || getDefaultTitle()}
+          </h3>
+          <p className={cn(
+            'text-muted-foreground',
+            size === 'small' ? 'text-xs' : 'text-sm'
+          )}>
+            {getDefaultMessage()}
+          </p>
+        </div>
+        
+        {showRetryCount && retryCount > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {t('error.retryCount', { count: retryCount, max: maxRetries })}
+          </p>
+        )}
+        
+        {canRetry && (
+          <Button 
+            onClick={handleRetry} 
+            disabled={isRetrying}
+            variant="outline"
+            size={size === 'small' ? 'sm' : 'default'}
+            className="gap-2"
+          >
+            {isRetrying ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {retryLabel || (isRetrying ? t('error.network.retrying') : t('error.retry'))}
+          </Button>
+        )}
+        
+        {showRetryCount && retryCount >= maxRetries && (
+          <p className="text-xs text-destructive">
+            {t('error.maxRetries')}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

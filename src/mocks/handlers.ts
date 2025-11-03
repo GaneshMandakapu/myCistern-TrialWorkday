@@ -124,6 +124,7 @@ const mockDevices = [
   },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockDeviceDetails: Record<string, any> = {
   'dev-001': {
     ...mockDevices[0],
@@ -326,6 +327,7 @@ export const handlers = [
     await delay(800);
     
     const { id } = params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body = await request.json() as any;
     
     console.log('📡 MSW: POST /api/devices/:id/command', {
