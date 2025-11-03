@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Wifi, WifiOff } from 'lucide-react';
-import { getDeviceDetails } from '../../api/client';
+import { ArrowLeft, Wifi, WifiOff, Thermometer, Droplet, Gauge, Battery, Signal } from 'lucide-react';
+import { getDeviceDetails, getDeviceMetrics } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
 import './DeviceDetail.css';
@@ -15,6 +15,22 @@ function DeviceDetail() {
     queryKey: ['device', id],
     queryFn: () => getDeviceDetails(id!),
     enabled: !!id,
+  });
+
+  // Fetch device metrics with polling (every 5 seconds)
+  // Only poll if device is online
+  const { 
+    data: metrics, 
+    isLoading: isLoadingMetrics, 
+    isError: isMetricsError, 
+    error: metricsError,
+    refetch: refetchMetrics 
+  } = useQuery({
+    queryKey: ['metrics', id],
+    queryFn: () => getDeviceMetrics(id!),
+    enabled: !!id && !!device && device.status === 'online', // Only fetch if device is online
+    refetchInterval: device?.status === 'online' ? 5000 : false, // Only poll if online
+    refetchIntervalInBackground: false, // Stop polling when tab is not active
   });
 
   const handleBack = () => {
@@ -130,6 +146,109 @@ function DeviceDetail() {
                 <span className="info-value">{formatUptime(device.uptime)}</span>
               </div>
             </div>
+          </div>
+
+          {/* Live Metrics Card */}
+          <div className={`detail-card metrics-card ${device.status === 'offline' ? 'offline' : ''}`}>
+            <div className="metrics-header">
+              <h2 className="card-title-small">Live Metrics</h2>
+              {device.status === 'online' && (
+                <span className="update-indicator">Updates every 5s</span>
+              )}
+              {device.status === 'offline' && (
+                <span className="update-indicator offline">Offline</span>
+              )}
+            </div>
+
+            {isLoadingMetrics && !metrics && (
+              <div className="metrics-loading">
+                <LoadingSpinner size="small" message="Loading metrics..." />
+              </div>
+            )}
+
+            {isMetricsError && (
+              <ErrorDisplay 
+                message={metricsError instanceof Error ? metricsError.message : 'Failed to load metrics'} 
+                onRetry={refetchMetrics}
+              />
+            )}
+
+            {/* Show message if device is offline */}
+            {device.status === 'offline' && (
+              <div className="no-metrics">
+                <p>Device is offline. Metrics unavailable.</p>
+              </div>
+            )}
+
+            {metrics && metrics.length > 0 && device.status === 'online' && (
+              <div className="metrics-grid">
+                {metrics[0].temperature !== undefined && (
+                  <div className="metric-card">
+                    <div className="metric-icon">
+                      <Thermometer size={20} />
+                    </div>
+                    <div className="metric-content">
+                      <span className="metric-label">Temperature</span>
+                      <span className="metric-value">{metrics[0].temperature.toFixed(1)}°C</span>
+                    </div>
+                  </div>
+                )}
+
+                {metrics[0].humidity !== undefined && (
+                  <div className="metric-card">
+                    <div className="metric-icon">
+                      <Droplet size={20} />
+                    </div>
+                    <div className="metric-content">
+                      <span className="metric-label">Humidity</span>
+                      <span className="metric-value">{metrics[0].humidity.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                )}
+
+                {metrics[0].pressure !== undefined && (
+                  <div className="metric-card">
+                    <div className="metric-icon">
+                      <Gauge size={20} />
+                    </div>
+                    <div className="metric-content">
+                      <span className="metric-label">Pressure</span>
+                      <span className="metric-value">{metrics[0].pressure.toFixed(0)} hPa</span>
+                    </div>
+                  </div>
+                )}
+
+                {metrics[0].batteryLevel !== undefined && (
+                  <div className="metric-card">
+                    <div className="metric-icon">
+                      <Battery size={20} />
+                    </div>
+                    <div className="metric-content">
+                      <span className="metric-label">Battery</span>
+                      <span className="metric-value">{metrics[0].batteryLevel.toFixed(0)}%</span>
+                    </div>
+                  </div>
+                )}
+
+                {metrics[0].signalStrength !== undefined && (
+                  <div className="metric-card">
+                    <div className="metric-icon">
+                      <Signal size={20} />
+                    </div>
+                    <div className="metric-content">
+                      <span className="metric-label">Signal</span>
+                      <span className="metric-value">{metrics[0].signalStrength.toFixed(0)} dBm</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {metrics && metrics.length === 0 && (
+              <div className="no-metrics">
+                <p>No metrics available for this device</p>
+              </div>
+            )}
           </div>
         </div>
       )}
