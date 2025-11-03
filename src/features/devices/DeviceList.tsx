@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Mic } from 'lucide-react';
 import { getDevices } from '../../api/client';
 import type { Device } from '../../api/client';
@@ -8,19 +9,37 @@ import ErrorDisplay from '../../shared/components/ErrorDisplay';
 import './DeviceList.css';
 
 function DeviceList() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize state from URL params
+  const urlQuery = searchParams.get('q') || '';
+  const urlPage = Number(searchParams.get('page')) || 1;
+  
+  const [searchQuery, setSearchQuery] = useState(urlQuery);
+  const [currentPage, setCurrentPage] = useState(urlPage);
+  const [debouncedQuery, setDebouncedQuery] = useState(urlQuery);
   const [isListening, setIsListening] = useState(false);
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
+      // Only reset to page 1 if the query actually changed
+      if (debouncedQuery !== searchQuery) {
+        setCurrentPage(1);
+      }
       setDebouncedQuery(searchQuery);
-      setCurrentPage(1); // Reset to first page on new search
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, debouncedQuery]);
+
+  // Update URL when search or page changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedQuery) params.set('q', debouncedQuery);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    setSearchParams(params, { replace: true });
+  }, [debouncedQuery, currentPage, setSearchParams]);
 
   // Fetch devices using React Query
   const { data: devices, isLoading, isError, error, refetch } = useQuery({
@@ -165,7 +184,18 @@ function DeviceList() {
           ) : (
             <div className="devices-grid">
               {devices.map((device) => (
-                <div key={device.id} className="device-card">
+                <div 
+                  key={device.id} 
+                  className="device-card"
+                  onClick={() => navigate(`/devices/${device.id}`)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      navigate(`/devices/${device.id}`);
+                    }
+                  }}
+                >
                   <div className="device-header">
                     <h3 className="device-name">{device.name}</h3>
                     <span className={getStatusBadgeClass(device.status)}>

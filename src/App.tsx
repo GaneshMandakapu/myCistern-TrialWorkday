@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import AppLayout from './app/AppLayout';
 import Home from './app/Home';
 import DeviceList from './features/devices/DeviceList';
+import DeviceDetail from './features/devices/DeviceDetail';
 import './App.css';
 
 // Create a client for React Query
@@ -24,6 +25,7 @@ function App() {
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path="devices" element={<DeviceList />} />
+            <Route path="devices/:id" element={<DeviceDetail />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -137,4 +137,5 @@ Use `<ErrorDisplay />` component from `src/shared/components/ErrorDisplay.tsx`
 Global toast notifications are configured via React Hot Toast
 
 
-**Commit checkpoint:** `chore: bootstrap app with router + query + mock api`
+**Commit checkpoint - 1:** `chore: bootstrap app with router + query + mock api`
+**Commit checkpoint - 2:** `feat: device list with search, pagination and states`
