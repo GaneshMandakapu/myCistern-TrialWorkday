@@ -1,9 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Wifi, WifiOff, Thermometer, Droplet, Gauge, Battery, Signal } from 'lucide-react';
-import { getDeviceDetails, getDeviceMetrics } from '../../api/client';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { ArrowLeft, Wifi, WifiOff, Thermometer, Droplet, Gauge, Battery, Signal, Power, RefreshCw, Settings, AlertTriangle, Loader2 } from 'lucide-react';
+import { getDeviceDetails, getDeviceMetrics, postDeviceCommand } from '../../api/client';
+import type { DeviceCommand } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
+import toast from 'react-hot-toast';
 import './DeviceDetail.css';
 
 function DeviceDetail() {
@@ -33,12 +35,59 @@ function DeviceDetail() {
     refetchIntervalInBackground: false, // Stop polling when tab is not active
   });
 
+  // Command mutation
+  const commandMutation = useMutation({
+    mutationFn: (command: DeviceCommand) => {
+      console.log('🚀 Mutation started:', command.command);
+      return postDeviceCommand(command);
+    },
+    onSuccess: (response) => {
+      console.log('✨ Mutation success:', response);
+      if (response.success) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
+    },
+    onError: (error) => {
+      console.error('💥 Mutation error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to send command');
+    },
+  });
+
   const handleBack = () => {
     navigate(-1);
   };
 
   const handleRetry = () => {
     refetch();
+  };
+
+  const handleSendCommand = (commandName: string, parameters?: Record<string, unknown>) => {
+    console.log('🔵 handleSendCommand called:', {
+      command: commandName,
+      isPending: commandMutation.isPending,
+      deviceStatus: device?.status,
+      deviceId: id
+    });
+    
+    // Prevent multiple submissions
+    if (!device || !id || commandMutation.isPending || device.status !== 'online') {
+      console.log('🔴 BLOCKED - Guard clause prevented submission:', {
+        hasDevice: !!device,
+        hasId: !!id,
+        isPending: commandMutation.isPending,
+        isOnline: device?.status === 'online'
+      });
+      return;
+    }
+    
+    console.log('🟢 EXECUTING - Sending command to API');
+    commandMutation.mutate({
+      deviceId: id,
+      command: commandName,
+      parameters,
+    });
   };
 
   const formatUptime = (seconds: number) => {
@@ -248,6 +297,58 @@ function DeviceDetail() {
               <div className="no-metrics">
                 <p>No metrics available for this device</p>
               </div>
+            )}
+          </div>
+
+          {/* Command Control Card */}
+          <div className="detail-card command-card">
+            <h2 className="card-title">Device Commands</h2>
+            <div className="command-buttons">
+              <button
+                className="command-button"
+                onClick={() => handleSendCommand('PING')}
+                disabled={device.status !== 'online' || commandMutation.isPending}
+                title={device.status !== 'online' ? 'Device must be online' : 'Test device connectivity'}
+              >
+                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <Power size={18} />}
+                <span>Ping</span>
+              </button>
+
+              <button
+                className="command-button"
+                onClick={() => handleSendCommand('REBOOT')}
+                disabled={device.status !== 'online' || commandMutation.isPending}
+                title={device.status !== 'online' ? 'Device must be online' : 'Restart the device'}
+              >
+                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <RefreshCw size={18} />}
+                <span>Reboot</span>
+              </button>
+
+              <button
+                className="command-button"
+                onClick={() => handleSendCommand('VALVE_OPEN', { valve: 'primary' })}
+                disabled={device.status !== 'online' || commandMutation.isPending}
+                title={device.status !== 'online' ? 'Device must be online' : 'Open primary valve'}
+              >
+                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <Settings size={18} />}
+                <span>Open Valve</span>
+              </button>
+
+              <button
+                className="command-button"
+                onClick={() => handleSendCommand('DIAGNOSTICS')}
+                disabled={device.status !== 'online' || commandMutation.isPending}
+                title={device.status !== 'online' ? 'Device must be online' : 'Run diagnostics'}
+              >
+                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <AlertTriangle size={18} />}
+                <span>Diagnostics</span>
+              </button>
+            </div>
+            {device.status !== 'online' && (
+              <p className="command-note">Commands are disabled when device is offline</p>
+            )}
+            {commandMutation.isPending && (
+              <p className="command-note">Sending command...</p>
             )}
           </div>
         </div>

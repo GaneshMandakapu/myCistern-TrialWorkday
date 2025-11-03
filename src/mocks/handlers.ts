@@ -1,52 +1,7 @@
-// API Client configuration
-// Now using MSW (Mock Service Worker) for realistic network requests
+import { http, HttpResponse, delay } from 'msw';
 
-export interface Device {
-  id: string;
-  name: string;
-  status: 'online' | 'offline';
-  type: string;
-  location: string;
-  lastSeen: string;
-}
-
-export interface DeviceDetails extends Device {
-  firmwareVersion: string;
-  ipAddress: string;
-  macAddress: string;
-  uptime: number;
-  description: string;
-}
-
-export interface DeviceMetrics {
-  deviceId: string;
-  timestamp: string;
-  temperature?: number;
-  humidity?: number;
-  pressure?: number;
-  batteryLevel?: number;
-  signalStrength?: number;
-}
-
-export interface DeviceCommand {
-  deviceId: string;
-  command: string;
-  parameters?: Record<string, unknown>;
-}
-
-export interface CommandResponse {
-  success: boolean;
-  message: string;
-  commandId: string;
-}
-
-// Utility function to simulate network delay
-const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
-
-// Mock data
-const mockDevices: Device[] = [
+// Mock data - same as in client.ts
+const mockDevices = [
   {
     id: 'dev-001',
     name: 'Water Tank Sensor A1',
@@ -169,7 +124,7 @@ const mockDevices: Device[] = [
   },
 ];
 
-const mockDeviceDetails: Record<string, DeviceDetails> = {
+const mockDeviceDetails: Record<string, any> = {
   'dev-001': {
     ...mockDevices[0],
     firmwareVersion: 'v2.1.3',
@@ -292,137 +247,119 @@ const mockDeviceDetails: Record<string, DeviceDetails> = {
   },
 };
 
-// Mock API implementations
-const mockGetDevices = async (query?: string, page = 1): Promise<Device[]> => {
-  await delay(500);
-  
-  let filteredDevices = [...mockDevices];
-  
-  if (query) {
-    const lowerQuery = query.toLowerCase();
-    filteredDevices = filteredDevices.filter(
-      device =>
-        device.name.toLowerCase().includes(lowerQuery) ||
-        device.location.toLowerCase().includes(lowerQuery) ||
-        device.type.toLowerCase().includes(lowerQuery)
-    );
-  }
-  
-  // Simple pagination (5 items per page)
-  const start = (page - 1) * 5;
-  const end = start + 5;
-  
-  return filteredDevices.slice(start, end);
-};
+export const handlers = [
+  // GET /api/devices - List devices with optional query and pagination
+  http.get('/api/devices', async ({ request }) => {
+    await delay(500);
+    
+    const url = new URL(request.url);
+    const query = url.searchParams.get('query') || '';
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    
+    let filteredDevices = [...mockDevices];
+    
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      filteredDevices = filteredDevices.filter(
+        device =>
+          device.name.toLowerCase().includes(lowerQuery) ||
+          device.location.toLowerCase().includes(lowerQuery) ||
+          device.type.toLowerCase().includes(lowerQuery)
+      );
+    }
+    
+    // Pagination (5 items per page)
+    const start = (page - 1) * 5;
+    const end = start + 5;
+    
+    console.log('📡 MSW: GET /api/devices', { query, page, total: filteredDevices.length });
+    
+    return HttpResponse.json(filteredDevices.slice(start, end));
+  }),
 
-const mockGetDeviceDetails = async (deviceId: string): Promise<DeviceDetails> => {
-  await delay(400);
-  
-  const details = mockDeviceDetails[deviceId];
-  if (!details) {
-    throw new Error(`Device ${deviceId} not found`);
-  }
-  
-  return details;
-};
+  // GET /api/devices/:id - Get device details
+  http.get('/api/devices/:id', async ({ params }) => {
+    await delay(400);
+    
+    const { id } = params;
+    const details = mockDeviceDetails[id as string];
+    
+    console.log('📡 MSW: GET /api/devices/:id', { id, found: !!details });
+    
+    if (!details) {
+      return new HttpResponse(null, {
+        status: 404,
+        statusText: 'Device not found',
+      });
+    }
+    
+    return HttpResponse.json(details);
+  }),
 
-const mockGetDeviceMetrics = async (deviceId: string): Promise<DeviceMetrics[]> => {
-  await delay(600);
-  
-  // Generate mock metrics for the last 10 readings
-  const metrics: DeviceMetrics[] = [];
-  for (let i = 9; i >= 0; i--) {
-    metrics.push({
-      deviceId,
-      timestamp: new Date(Date.now() - i * 300000).toISOString(),
-      temperature: 20 + Math.random() * 10,
-      humidity: 40 + Math.random() * 30,
-      pressure: 1000 + Math.random() * 50,
-      batteryLevel: 80 + Math.random() * 20,
-      signalStrength: -60 + Math.random() * 20,
+  // GET /api/devices/:id/metrics - Get device metrics
+  http.get('/api/devices/:id/metrics', async ({ params }) => {
+    await delay(600);
+    
+    const { id } = params;
+    
+    // Generate mock metrics for the last 10 readings
+    const metrics = [];
+    for (let i = 9; i >= 0; i--) {
+      metrics.push({
+        deviceId: id,
+        timestamp: new Date(Date.now() - i * 300000).toISOString(),
+        temperature: 20 + Math.random() * 10,
+        humidity: 40 + Math.random() * 30,
+        pressure: 1000 + Math.random() * 50,
+        batteryLevel: 80 + Math.random() * 20,
+        signalStrength: -60 + Math.random() * 20,
+      });
+    }
+    
+    console.log('📡 MSW: GET /api/devices/:id/metrics', { deviceId: id, metricsCount: metrics.length });
+    
+    return HttpResponse.json(metrics);
+  }),
+
+  // POST /api/devices/:id/command - Send command to device
+  http.post('/api/devices/:id/command', async ({ params, request }) => {
+    await delay(800);
+    
+    const { id } = params;
+    const body = await request.json() as any;
+    
+    console.log('📡 MSW: POST /api/devices/:id/command', {
+      deviceId: id,
+      command: body.command,
+      parameters: body.parameters,
+      timestamp: new Date().toISOString()
     });
-  }
-  
-  return metrics;
-};
-
-const mockPostDeviceCommand = async (command: DeviceCommand): Promise<CommandResponse> => {
-  console.log('📤 API Call: postDeviceCommand', {
-    deviceId: command.deviceId,
-    command: command.command,
-    parameters: command.parameters,
-    timestamp: new Date().toISOString()
-  });
-  
-  await delay(800);
-  
-  const device = mockDevices.find(d => d.id === command.deviceId);
-  if (!device) {
-    console.error('❌ Device not found:', command.deviceId);
-    throw new Error(`Device ${command.deviceId} not found`);
-  }
-  
-  if (device.status === 'offline') {
-    const response = {
-      success: false,
-      message: `Device ${device.name} is offline and cannot process commands`,
+    
+    const device = mockDevices.find(d => d.id === id);
+    
+    if (!device) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: `Device ${id} not found`,
+          commandId: `cmd-${Date.now()}`,
+        },
+        { status: 404 }
+      );
+    }
+    
+    if (device.status === 'offline') {
+      return HttpResponse.json({
+        success: false,
+        message: `Device ${device.name} is offline and cannot process commands`,
+        commandId: `cmd-${Date.now()}`,
+      });
+    }
+    
+    return HttpResponse.json({
+      success: true,
+      message: `Command "${body.command}" sent to ${device.name}`,
       commandId: `cmd-${Date.now()}`,
-    };
-    console.log('⚠️ API Response: Command failed (device offline)', response);
-    return response;
-  }
-  
-  const response = {
-    success: true,
-    message: `Command "${command.command}" sent to ${device.name}`,
-    commandId: `cmd-${Date.now()}`,
-  };
-  console.log('✅ API Response: Command successful', response);
-  return response;
-};
-
-// Real API implementations (placeholder for future)
-const realGetDevices = async (query?: string, page = 1): Promise<Device[]> => {
-  const response = await fetch(`/api/devices?query=${query || ''}&page=${page}`);
-  if (!response.ok) throw new Error('Failed to fetch devices');
-  return response.json();
-};
-
-const realGetDeviceDetails = async (deviceId: string): Promise<DeviceDetails> => {
-  const response = await fetch(`/api/devices/${deviceId}`);
-  if (!response.ok) throw new Error('Failed to fetch device details');
-  return response.json();
-};
-
-const realGetDeviceMetrics = async (deviceId: string): Promise<DeviceMetrics[]> => {
-  const response = await fetch(`/api/devices/${deviceId}/metrics`);
-  if (!response.ok) throw new Error('Failed to fetch device metrics');
-  return response.json();
-};
-
-const realPostDeviceCommand = async (command: DeviceCommand): Promise<CommandResponse> => {
-  console.log('📤 API Call: postDeviceCommand', {
-    deviceId: command.deviceId,
-    command: command.command,
-    parameters: command.parameters,
-    timestamp: new Date().toISOString()
-  });
-  
-  const response = await fetch(`/api/devices/${command.deviceId}/command`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(command),
-  });
-  if (!response.ok) throw new Error('Failed to send command');
-  const data = await response.json();
-  
-  console.log('✅ API Response:', data);
-  return data;
-};
-
-// Exported API functions - now using real fetch calls (intercepted by MSW)
-export const getDevices = realGetDevices;
-export const getDeviceDetails = realGetDeviceDetails;
-export const getDeviceMetrics = realGetDeviceMetrics;
-export const postDeviceCommand = realPostDeviceCommand;
-
+    });
+  }),
+];
