@@ -1,4 +1,5 @@
 // Shared error display component
+import { useTranslation } from 'react-i18next';
 import './ErrorDisplay.css';
 
 interface ErrorDisplayProps {
@@ -7,14 +8,16 @@ interface ErrorDisplayProps {
 }
 
 function ErrorDisplay({ message, onRetry }: ErrorDisplayProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="error-container">
       <div className="error-icon">⚠️</div>
-      <h3 className="error-title">Something went wrong</h3>
+      <h3 className="error-title">{t('error.title')}</h3>
       <p className="error-message">{message}</p>
       {onRetry && (
         <button onClick={onRetry} className="retry-button">
-          Try Again
+          {t('error.retry')}
         </button>
       )}
     </div>

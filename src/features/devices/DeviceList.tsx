@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Search, Mic } from 'lucide-react';
 import { getDevices } from '../../api/client';
 import type { Device } from '../../api/client';
@@ -9,6 +10,7 @@ import ErrorDisplay from '../../shared/components/ErrorDisplay';
 import './DeviceList.css';
 
 function DeviceList() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -104,22 +106,22 @@ function DeviceList() {
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffMins < 1) return t('time.justNow');
+    if (diffMins < 60) return t('time.minutesAgo', { count: diffMins });
     
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffHours < 24) return t('time.hoursAgo', { count: diffHours });
     
     const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+    return t('time.daysAgo', { count: diffDays });
   };
 
   return (
     <div className="device-list">
       <div className="page-header">
-        <h1>IoT Devices</h1>
+        <h1>{t('devices.title')}</h1>
         <p className="page-description">
-          View and manage all your connected devices
+          {t('devices.description')}
         </p>
       </div>
 
@@ -130,7 +132,7 @@ function DeviceList() {
             <input
               type="text"
               name="search"
-              placeholder="Search devices by name, type, or location..."
+              placeholder={t('devices.search')}
               value={searchQuery}
               onChange={handleSearch}
               className="search-input"
@@ -147,9 +149,9 @@ function DeviceList() {
         
         <button
           className={`voice-button ${isListening ? 'listening' : ''}`}
-          aria-label="Search with voice"
+          aria-label={t('devices.voiceSearch')}
           onClick={handleVoiceSearch}
-          title={isListening ? 'Listening...' : 'Voice search'}
+          title={isListening ? 'Listening...' : t('devices.voiceSearch')}
         >
           <Mic className="mic-icon" size={20} />
         </button>
@@ -157,13 +159,13 @@ function DeviceList() {
 
       {/* Loading State */}
       {isLoading && (
-        <LoadingSpinner size="large" message="Loading devices..." />
+        <LoadingSpinner size="large" message={t('devices.loading')} />
       )}
 
       {/* Error State */}
       {isError && (
         <ErrorDisplay 
-          message={error instanceof Error ? error.message : 'Failed to load devices'} 
+          message={error instanceof Error ? error.message : t('devices.error')} 
           onRetry={handleRetry}
         />
       )}
@@ -174,7 +176,7 @@ function DeviceList() {
           {devices.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📭</div>
-              <h3>No devices found</h3>
+              <h3>{t('devices.noResults')}</h3>
               <p>
                 {searchQuery 
                   ? `No devices match "${searchQuery}"`
@@ -197,23 +199,23 @@ function DeviceList() {
                   }}
                 >
                   <div className="device-header">
-                    <h3 className="device-name">{device.name}</h3>
+                    <h3 className="device-name">{t(`deviceName.${device.name}`, device.name)}</h3>
                     <span className={getStatusBadgeClass(device.status)}>
-                      {device.status}
+                      {t(`devices.${device.status}`)}
                     </span>
                   </div>
                   
                   <div className="device-info">
                     <div className="info-row">
-                      <span className="info-label">Type:</span>
-                      <span className="info-value">{device.type}</span>
+                      <span className="info-label">{t('detail.type')}:</span>
+                      <span className="info-value">{t(`deviceType.${device.type}`, device.type)}</span>
                     </div>
                     <div className="info-row">
-                      <span className="info-label">Location:</span>
-                      <span className="info-value">{device.location}</span>
+                      <span className="info-label">{t('detail.location')}:</span>
+                      <span className="info-value">{t(`location.${device.location}`, device.location)}</span>
                     </div>
                     <div className="info-row">
-                      <span className="info-label">Last Seen:</span>
+                      <span className="info-label">{t('detail.lastSeen')}:</span>
                       <span className="info-value">{formatLastSeen(device.lastSeen)}</span>
                     </div>
                   </div>
@@ -230,15 +232,15 @@ function DeviceList() {
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
-                Previous
+                {t('devices.previous')}
               </button>
-              <span className="pagination-info">Page {currentPage}</span>
+              <span className="pagination-info">{t('devices.page')} {currentPage}</span>
               <button
                 className="pagination-button"
                 onClick={() => setCurrentPage(prev => prev + 1)}
                 disabled={devices.length === 0}
               >
-                Next
+                {t('devices.next')}
               </button>
             </div>
           )}

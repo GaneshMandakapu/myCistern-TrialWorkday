@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Wifi, WifiOff, Thermometer, Droplet, Gauge, Battery, Signal, Power, RefreshCw, Settings, AlertTriangle, Loader2 } from 'lucide-react';
 import { getDeviceDetails, getDeviceMetrics, postDeviceCommand } from '../../api/client';
 import type { DeviceCommand } from '../../api/client';
@@ -9,6 +10,7 @@ import toast from 'react-hot-toast';
 import './DeviceDetail.css';
 
 function DeviceDetail() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -117,16 +119,16 @@ function DeviceDetail() {
     <div className="device-detail">
       {/* Header with Back Button */}
       <div className="detail-header">
-        <button onClick={handleBack} className="back-button" aria-label="Go back">
+        <button onClick={handleBack} className="back-button" aria-label={t('nav.back')}>
           <ArrowLeft size={20} />
-          <span>Back</span>
+          <span>{t('nav.back')}</span>
         </button>
       </div>
 
       {/* Loading State */}
       {isLoading && (
         <div className="detail-loading">
-          <LoadingSpinner size="large" message="Loading..." />
+          <LoadingSpinner size="large" message={t('devices.loading')} />
         </div>
       )}
 
@@ -154,12 +156,12 @@ function DeviceDetail() {
                 )}
               </div>
               <div className="device-title-info">
-                <h1 className="device-title">{device.name}</h1>
-                <p className="device-subtitle">{device.type}</p>
+                <h1 className="device-title">{t(`deviceName.${device.name}`, device.name)}</h1>
+                <p className="device-subtitle">{t(`deviceType.${device.type}`, device.type)}</p>
               </div>
             </div>
             <div className={`status-badge-large ${device.status}`}>
-              {device.status}
+              {t(`devices.${device.status}`)}
             </div>
           </div>
 
@@ -167,27 +169,27 @@ function DeviceDetail() {
           <div className="detail-card info-card">
             <div className="info-grid">
               <div className="info-item">
-                <span className="info-label">Device ID</span>
+                <span className="info-label">{t('detail.deviceId')}</span>
                 <span className="info-value">{device.id}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Location</span>
-                <span className="info-value">{device.location}</span>
+                <span className="info-label">{t('detail.location')}</span>
+                <span className="info-value">{t(`location.${device.location}`, device.location)}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Firmware</span>
+                <span className="info-label">{t('detail.firmware')}</span>
                 <span className="info-value">{device.firmwareVersion}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">IP Address</span>
+                <span className="info-label">{t('detail.ipAddress')}</span>
                 <span className="info-value code">{device.ipAddress}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">MAC Address</span>
+                <span className="info-label">{t('detail.macAddress')}</span>
                 <span className="info-value code">{device.macAddress}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Last Seen</span>
+                <span className="info-label">{t('detail.lastSeen')}</span>
                 <span className="info-value">{formatLastSeen(device.lastSeen)}</span>
               </div>
               <div className="info-item">
@@ -200,18 +202,18 @@ function DeviceDetail() {
           {/* Live Metrics Card */}
           <div className={`detail-card metrics-card ${device.status === 'offline' ? 'offline' : ''}`}>
             <div className="metrics-header">
-              <h2 className="card-title-small">Live Metrics</h2>
+              <h2 className="card-title-small">{t('metrics.title')}</h2>
               {device.status === 'online' && (
-                <span className="update-indicator">Updates every 5s</span>
+                <span className="update-indicator">{t('metrics.updating')}</span>
               )}
               {device.status === 'offline' && (
-                <span className="update-indicator offline">Offline</span>
+                <span className="update-indicator offline">{t('metrics.offline')}</span>
               )}
             </div>
 
             {isLoadingMetrics && !metrics && (
               <div className="metrics-loading">
-                <LoadingSpinner size="small" message="Loading metrics..." />
+                <LoadingSpinner size="small" message={t('devices.loading')} />
               </div>
             )}
 
@@ -225,7 +227,7 @@ function DeviceDetail() {
             {/* Show message if device is offline */}
             {device.status === 'offline' && (
               <div className="no-metrics">
-                <p>Device is offline. Metrics unavailable.</p>
+                <p>{t('metrics.offlineMessage')}</p>
               </div>
             )}
 
@@ -237,7 +239,7 @@ function DeviceDetail() {
                       <Thermometer size={20} />
                     </div>
                     <div className="metric-content">
-                      <span className="metric-label">Temperature</span>
+                      <span className="metric-label">{t('metrics.temperature')}</span>
                       <span className="metric-value">{metrics[0].temperature.toFixed(1)}°C</span>
                     </div>
                   </div>
@@ -249,7 +251,7 @@ function DeviceDetail() {
                       <Droplet size={20} />
                     </div>
                     <div className="metric-content">
-                      <span className="metric-label">Humidity</span>
+                      <span className="metric-label">{t('metrics.humidity')}</span>
                       <span className="metric-value">{metrics[0].humidity.toFixed(1)}%</span>
                     </div>
                   </div>
@@ -261,7 +263,7 @@ function DeviceDetail() {
                       <Gauge size={20} />
                     </div>
                     <div className="metric-content">
-                      <span className="metric-label">Pressure</span>
+                      <span className="metric-label">{t('metrics.pressure')}</span>
                       <span className="metric-value">{metrics[0].pressure.toFixed(0)} hPa</span>
                     </div>
                   </div>
@@ -273,7 +275,7 @@ function DeviceDetail() {
                       <Battery size={20} />
                     </div>
                     <div className="metric-content">
-                      <span className="metric-label">Battery</span>
+                      <span className="metric-label">{t('metrics.battery')}</span>
                       <span className="metric-value">{metrics[0].batteryLevel.toFixed(0)}%</span>
                     </div>
                   </div>
@@ -285,7 +287,7 @@ function DeviceDetail() {
                       <Signal size={20} />
                     </div>
                     <div className="metric-content">
-                      <span className="metric-label">Signal</span>
+                      <span className="metric-label">{t('metrics.signal')}</span>
                       <span className="metric-value">{metrics[0].signalStrength.toFixed(0)} dBm</span>
                     </div>
                   </div>
@@ -295,60 +297,60 @@ function DeviceDetail() {
 
             {metrics && metrics.length === 0 && (
               <div className="no-metrics">
-                <p>No metrics available for this device</p>
+                <p>{t('metrics.noData')}</p>
               </div>
             )}
           </div>
 
           {/* Command Control Card */}
           <div className="detail-card command-card">
-            <h2 className="card-title">Device Commands</h2>
+            <h2 className="card-title">{t('commands.title')}</h2>
             <div className="command-buttons">
               <button
                 className="command-button"
                 onClick={() => handleSendCommand('PING')}
                 disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? 'Device must be online' : 'Test device connectivity'}
+                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.ping')}
               >
                 {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <Power size={18} />}
-                <span>Ping</span>
+                <span>{t('commands.ping')}</span>
               </button>
 
               <button
                 className="command-button"
                 onClick={() => handleSendCommand('REBOOT')}
                 disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? 'Device must be online' : 'Restart the device'}
+                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.reboot')}
               >
                 {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <RefreshCw size={18} />}
-                <span>Reboot</span>
+                <span>{t('commands.reboot')}</span>
               </button>
 
               <button
                 className="command-button"
                 onClick={() => handleSendCommand('VALVE_OPEN', { valve: 'primary' })}
                 disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? 'Device must be online' : 'Open primary valve'}
+                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.openValve')}
               >
                 {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <Settings size={18} />}
-                <span>Open Valve</span>
+                <span>{t('commands.openValve')}</span>
               </button>
 
               <button
                 className="command-button"
                 onClick={() => handleSendCommand('DIAGNOSTICS')}
                 disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? 'Device must be online' : 'Run diagnostics'}
+                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.diagnostics')}
               >
                 {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <AlertTriangle size={18} />}
-                <span>Diagnostics</span>
+                <span>{t('commands.diagnostics')}</span>
               </button>
             </div>
             {device.status !== 'online' && (
-              <p className="command-note">Commands are disabled when device is offline</p>
+              <p className="command-note">{t('commands.offlineNote')}</p>
             )}
             {commandMutation.isPending && (
-              <p className="command-note">Sending command...</p>
+              <p className="command-note">{t('commands.sending')}</p>
             )}
           </div>
         </div>

@@ -1,0 +1,44 @@
+.theme-toggle-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-button:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.toggle-button:active {
+  transform: translateY(0);
+}
+
+.toggle-label {
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .toggle-label {
+    display: none;
+  }
+  
+  .toggle-button {
+    padding: 0.5rem;
+  }
+}

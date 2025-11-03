@@ -140,4 +140,5 @@ Global toast notifications are configured via React Hot Toast
 **Commit checkpoint - 1:** `chore: bootstrap app with router + query + mock api`
 **Commit checkpoint - 2:** `feat: device list with search, pagination and states`
 **Commit checkpoint - 3:**  `feat:device detail page with robust states`
-**Commit checkpoint - 3:**  `feat: livce metrics pollling on device deatail`
+**Commit checkpoint - 4:**  `feat: lice metrics pollling on device detail`
+**Commit checkpoint - 5:**  `feat: theming and i18n foundation`
