@@ -10,6 +10,24 @@ const resources = {
       'nav.devices': 'Devices',
       'nav.back': 'Back',
       
+      // Home Page
+      'home.title': 'Welcome to myCistern Platform',
+      'home.subtitle': 'Monitor and manage your IoT devices in real-time with our powerful, intuitive platform',
+      'home.exploreDevices': 'Explore Devices',
+      'home.learnMore': 'Learn More',
+      'home.features.title': 'Powerful Features',
+      'home.features.subtitle': 'Everything you need to monitor, manage, and control your IoT ecosystem',
+      'home.features.monitoring.title': 'Real-time Monitoring',
+      'home.features.monitoring.description': 'Track device status, performance metrics, and health data in real-time with live dashboards and alerts',
+      'home.features.search.title': 'Smart Search',
+      'home.features.search.description': 'Quickly find devices with powerful search, filtering, and voice search capabilities across your entire network',
+      'home.features.control.title': 'Device Control',
+      'home.features.control.description': 'Send commands, update configurations, and control devices remotely with secure, reliable communication',
+      'home.stats.devices': 'Connected Devices',
+      'home.stats.uptime': 'Uptime',
+      'home.stats.monitoring': 'Monitoring',
+      'home.stats.events': 'Daily Events',
+      
       // Theme
       'theme.light': 'Light',
       'theme.dark': 'Dark',
@@ -78,12 +96,52 @@ const resources = {
       'error.network': 'Network error',
       'error.unknown': 'An unexpected error occurred',
       'error.retry': 'Retry',
+      'error.retryCount': 'Attempt {{count}} of {{max}}',
+      'error.maxRetries': 'Maximum retry attempts reached. Please refresh the page or try again later.',
       
       // Time
       'time.justNow': 'Just now',
       'time.minutesAgo': '{{count}}m ago',
       'time.hoursAgo': '{{count}}h ago',
       'time.daysAgo': '{{count}}d ago',
+      
+      // Error Handling
+      'error.notFound.title': '404 - Page Not Found',
+      'error.notFound.message': 'The page you are looking for does not exist or has been moved.',
+      'error.notFound.goHome': 'Go to Home',
+      'error.notFound.goDevices': 'Browse Devices',
+      'error.notFound.goBack': 'Go Back',
+      'error.notFound.help': 'You can navigate to:',
+      
+      'error.boundary.title': 'Something Went Wrong',
+      'error.boundary.message': 'An unexpected error occurred. Please try reloading the page or go back to the home page.',
+      'error.boundary.details': 'Technical Details',
+      'error.boundary.reload': 'Reload Page',
+      'error.boundary.goHome': 'Go to Home',
+      'error.boundary.help': 'If the problem persists, please contact support.',
+      
+      'error.network.title': 'Network Connection Error',
+      'error.network.message': 'Unable to connect to the server. Please check your internet connection and try again.',
+      'error.network.retry': 'Try Again',
+      'error.network.retrying': 'Retrying...',
+      'error.network.online': 'Online',
+      'error.network.offline': 'Offline',
+      'error.network.help': 'Connection troubleshooting:',
+      'error.network.suggestion1': 'Check your internet connection',
+      'error.network.suggestion2': 'Refresh the page',
+      'error.network.suggestion3': 'Try again in a few moments',
+      
+      // Empty States
+      'empty.default.title': 'No Data Available',
+      'empty.default.message': 'There is currently no data to display.',
+      'empty.search.title': 'No Results Found',
+      'empty.search.message': 'Try adjusting your search criteria or clearing filters.',
+      'empty.error.title': 'Loading Error',
+      'empty.error.message': 'Failed to load data. Please try again.',
+      'empty.loading.title': 'Loading...',
+      'empty.loading.message': 'Please wait while we fetch the data.',
+      'empty.action.primary': 'Refresh',
+      'empty.action.secondary': 'Clear Filters',
       
       // Toast messages
       'toast.commandSuccess': 'Command "{{command}}" sent to {{device}}',
@@ -142,6 +200,24 @@ const resources = {
       'nav.home': 'Startseite',
       'nav.devices': 'Geräte',
       'nav.back': 'Zurück',
+      
+      // Home Page
+      'home.title': 'Willkommen bei myCistern Plattform',
+      'home.subtitle': 'Überwachen und verwalten Sie Ihre IoT-Geräte in Echtzeit mit unserer leistungsstarken, intuitiven Plattform',
+      'home.exploreDevices': 'Geräte erkunden',
+      'home.learnMore': 'Mehr erfahren',
+      'home.features.title': 'Leistungsstarke Funktionen',
+      'home.features.subtitle': 'Alles was Sie brauchen, um Ihr IoT-Ökosystem zu überwachen, verwalten und steuern',
+      'home.features.monitoring.title': 'Echtzeit-Überwachung',
+      'home.features.monitoring.description': 'Verfolgen Sie Gerätestatus, Leistungsmetriken und Gesundheitsdaten in Echtzeit mit Live-Dashboards und Alarmen',
+      'home.features.search.title': 'Intelligente Suche',
+      'home.features.search.description': 'Finden Sie Geräte schnell mit leistungsstarker Suche, Filterung und Sprachsuchfunktionen in Ihrem gesamten Netzwerk',
+      'home.features.control.title': 'Gerätesteuerung',
+      'home.features.control.description': 'Senden Sie Befehle, aktualisieren Sie Konfigurationen und steuern Sie Geräte sicher und zuverlässig aus der Ferne',
+      'home.stats.devices': 'Verbundene Geräte',
+      'home.stats.uptime': 'Betriebszeit',
+      'home.stats.monitoring': 'Überwachung',
+      'home.stats.events': 'Tägliche Ereignisse',
       
       // Theme
       'theme.light': 'Hell',
@@ -211,12 +287,52 @@ const resources = {
       'error.network': 'Netzwerkfehler',
       'error.unknown': 'Ein unerwarteter Fehler ist aufgetreten',
       'error.retry': 'Erneut versuchen',
+      'error.retryCount': 'Versuch {{count}} von {{max}}',
+      'error.maxRetries': 'Maximale Anzahl der Wiederholungsversuche erreicht. Bitte aktualisieren Sie die Seite oder versuchen Sie es später erneut.',
       
       // Time
       'time.justNow': 'Gerade eben',
       'time.minutesAgo': 'vor {{count}}m',
       'time.hoursAgo': 'vor {{count}}h',
       'time.daysAgo': 'vor {{count}}d',
+      
+      // Error Handling
+      'error.notFound.title': '404 - Seite nicht gefunden',
+      'error.notFound.message': 'Die gesuchte Seite existiert nicht oder wurde verschoben.',
+      'error.notFound.goHome': 'Zur Startseite',
+      'error.notFound.goDevices': 'Geräte durchsuchen',
+      'error.notFound.goBack': 'Zurück',
+      'error.notFound.help': 'Sie können navigieren zu:',
+      
+      'error.boundary.title': 'Etwas ist schiefgelaufen',
+      'error.boundary.message': 'Ein unerwarteter Fehler ist aufgetreten. Bitte laden Sie die Seite neu oder gehen Sie zur Startseite zurück.',
+      'error.boundary.details': 'Technische Details',
+      'error.boundary.reload': 'Seite neu laden',
+      'error.boundary.goHome': 'Zur Startseite',
+      'error.boundary.help': 'Falls das Problem weiterhin besteht, wenden Sie sich an den Support.',
+      
+      'error.network.title': 'Netzwerkverbindungsfehler',
+      'error.network.message': 'Verbindung zum Server nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.',
+      'error.network.retry': 'Erneut versuchen',
+      'error.network.retrying': 'Versuche erneut...',
+      'error.network.online': 'Online',
+      'error.network.offline': 'Offline',
+      'error.network.help': 'Verbindungsfehlersuche:',
+      'error.network.suggestion1': 'Internetverbindung überprüfen',
+      'error.network.suggestion2': 'Seite aktualisieren',
+      'error.network.suggestion3': 'In wenigen Minuten erneut versuchen',
+      
+      // Empty States
+      'empty.default.title': 'Keine Daten verfügbar',
+      'empty.default.message': 'Derzeit sind keine Daten anzuzeigen.',
+      'empty.search.title': 'Keine Ergebnisse gefunden',
+      'empty.search.message': 'Versuchen Sie, Ihre Suchkriterien anzupassen oder Filter zu löschen.',
+      'empty.error.title': 'Ladefehler',
+      'empty.error.message': 'Daten konnten nicht geladen werden. Bitte erneut versuchen.',
+      'empty.loading.title': 'Lädt...',
+      'empty.loading.message': 'Bitte warten Sie, während wir die Daten laden.',
+      'empty.action.primary': 'Aktualisieren',
+      'empty.action.secondary': 'Filter löschen',
       
       // Toast messages
       'toast.commandSuccess': 'Befehl "{{command}}" an {{device}} gesendet',

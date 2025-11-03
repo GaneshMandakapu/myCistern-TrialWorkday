@@ -1,10 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from '@/components/ui/toaster';
 import AppLayout from './app/AppLayout';
 import Home from './app/Home';
 import DeviceList from './features/devices/DeviceList';
 import DeviceDetail from './features/devices/DeviceDetail';
+import CookiePolicy from './pages/CookiePolicy';
+import NotFound from './shared/components/NotFound';
+import ErrorBoundary from './shared/components/ErrorBoundary';
 import './App.css';
 
 // Create a client for React Query
@@ -20,41 +23,23 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<Home />} />
-            <Route path="devices" element={<DeviceList />} />
-            <Route path="devices/:id" element={<DeviceDetail />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<Home />} />
+              <Route path="devices" element={<DeviceList />} />
+              <Route path="devices/:id" element={<DeviceDetail />} />
+              <Route path="cookies" element={<CookiePolicy />} />
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ErrorBoundary>
       
       {/* Global toast notifications for errors/success */}
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
+      <Toaster />
     </QueryClientProvider>
   );
 }

@@ -6,13 +6,17 @@ import { getDeviceDetails, getDeviceMetrics, postDeviceCommand } from '../../api
 import type { DeviceCommand } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
-import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import './DeviceDetail.css';
 
 function DeviceDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Fetch device details using React Query
   const { data: device, isLoading, isError, error, refetch } = useQuery({
@@ -46,23 +50,31 @@ function DeviceDetail() {
     onSuccess: (response) => {
       console.log('✨ Mutation success:', response);
       if (response.success) {
-        toast.success(response.message);
+        toast({
+          title: "Success",
+          description: response.message,
+          variant: "success"
+        });
       } else {
-        toast.error(response.message);
+        toast({
+          title: "Error",
+          description: response.message,
+          variant: "destructive"
+        });
       }
     },
     onError: (error) => {
       console.error('💥 Mutation error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send command');
+      toast({
+        title: "Command Failed",
+        description: error instanceof Error ? error.message : 'Failed to send command',
+        variant: "destructive"
+      });
     },
   });
 
   const handleBack = () => {
     navigate(-1);
-  };
-
-  const handleRetry = () => {
-    refetch();
   };
 
   const handleSendCommand = (commandName: string, parameters?: Record<string, unknown>) => {
@@ -116,243 +128,323 @@ function DeviceDetail() {
   };
 
   return (
-    <div className="device-detail">
+    <div className="container mx-auto px-4 py-4 space-y-4">
       {/* Header with Back Button */}
-      <div className="detail-header">
-        <button onClick={handleBack} className="back-button" aria-label={t('nav.back')}>
-          <ArrowLeft size={20} />
-          <span>{t('nav.back')}</span>
-        </button>
+      <div className="flex items-center gap-3">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleBack} 
+          className="gap-2" 
+          aria-label={t('nav.back')}
+        >
+          <ArrowLeft size={16} />
+          {t('nav.back')}
+        </Button>
       </div>
 
       {/* Loading State */}
       {isLoading && (
-        <div className="detail-loading">
+        <div className="flex justify-center py-12">
           <LoadingSpinner size="large" message={t('devices.loading')} />
         </div>
       )}
 
       {/* Error State */}
       {isError && (
-        <div className="detail-error">
+        <div className="py-8">
           <ErrorDisplay 
-            message={error instanceof Error ? error.message : 'Failed to load device'} 
-            onRetry={handleRetry}
+            message={error instanceof Error ? error.message : t('error.notFound')} 
+            onRetry={refetch}
+            variant="network"
+            title={t('error.network.title')}
+            showRetryCount={true}
+            maxRetries={3}
+            size="large"
           />
         </div>
       )}
 
       {/* Device Details */}
       {!isLoading && !isError && device && (
-        <div className="detail-content">
+        <div className="space-y-4">
           {/* Device Header Card */}
-          <div className="detail-card header-card">
-            <div className="device-title-section">
-              <div className="device-status-icon">
-                {device.status === 'online' ? (
-                  <Wifi className="status-icon online" size={28} />
-                ) : (
-                  <WifiOff className="status-icon offline" size={28} />
-                )}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    {device.status === 'online' ? (
+                      <Wifi className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <WifiOff className="h-5 w-5 text-red-600" />
+                    )}
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">{t(`deviceName.${device.name}`, device.name)}</CardTitle>
+                    <CardDescription className="text-sm">{t(`deviceType.${device.type}`, device.type)}</CardDescription>
+                  </div>
+                </div>
+                <Badge 
+                  variant={device.status === 'online' ? 'success' : 'destructive'}
+                  className="text-xs px-2 py-1"
+                >
+                  {t(`devices.${device.status}`)}
+                </Badge>
               </div>
-              <div className="device-title-info">
-                <h1 className="device-title">{t(`deviceName.${device.name}`, device.name)}</h1>
-                <p className="device-subtitle">{t(`deviceType.${device.type}`, device.type)}</p>
-              </div>
-            </div>
-            <div className={`status-badge-large ${device.status}`}>
-              {t(`devices.${device.status}`)}
-            </div>
-          </div>
+            </CardHeader>
+          </Card>
 
           {/* Device Information Card */}
-          <div className="detail-card info-card">
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">{t('detail.deviceId')}</span>
-                <span className="info-value">{device.id}</span>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Device Information</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">{t('detail.deviceId')}</div>
+                  <div className="text-sm">{device.id}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">{t('detail.location')}</div>
+                  <div className="text-sm">{t(`location.${device.location}`, device.location)}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">{t('detail.firmware')}</div>
+                  <div className="text-sm">{device.firmwareVersion}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">{t('detail.ipAddress')}</div>
+                  <div className="text-xs font-mono bg-muted px-2 py-1 rounded">{device.ipAddress}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">{t('detail.macAddress')}</div>
+                  <div className="text-xs font-mono bg-muted px-2 py-1 rounded">{device.macAddress}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">{t('detail.lastSeen')}</div>
+                  <div className="text-sm">{formatLastSeen(device.lastSeen)}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs font-medium text-muted-foreground">Uptime</div>
+                  <div className="text-sm">{formatUptime(device.uptime)}</div>
+                </div>
               </div>
-              <div className="info-item">
-                <span className="info-label">{t('detail.location')}</span>
-                <span className="info-value">{t(`location.${device.location}`, device.location)}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">{t('detail.firmware')}</span>
-                <span className="info-value">{device.firmwareVersion}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">{t('detail.ipAddress')}</span>
-                <span className="info-value code">{device.ipAddress}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">{t('detail.macAddress')}</span>
-                <span className="info-value code">{device.macAddress}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">{t('detail.lastSeen')}</span>
-                <span className="info-value">{formatLastSeen(device.lastSeen)}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Uptime</span>
-                <span className="info-value">{formatUptime(device.uptime)}</span>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Live Metrics Card */}
-          <div className={`detail-card metrics-card ${device.status === 'offline' ? 'offline' : ''}`}>
-            <div className="metrics-header">
-              <h2 className="card-title-small">{t('metrics.title')}</h2>
-              {device.status === 'online' && (
-                <span className="update-indicator">{t('metrics.updating')}</span>
+          <Card className={device.status === 'offline' ? 'opacity-60' : ''}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">{t('metrics.title')}</CardTitle>
+                {device.status === 'online' && (
+                  <Badge variant="success" className="gap-1 text-xs">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                    {t('metrics.updating')}
+                  </Badge>
+                )}
+                {device.status === 'offline' && (
+                  <Badge variant="secondary" className="text-xs">
+                    {t('metrics.offline')}
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="pt-0">
+              {isLoadingMetrics && !metrics && (
+                <div className="flex justify-center py-4">
+                  <LoadingSpinner size="small" message={t('devices.loading')} />
+                </div>
               )}
+
+              {isMetricsError && (
+                <ErrorDisplay 
+                  message={metricsError instanceof Error ? metricsError.message : t('error.network.message')} 
+                  onRetry={refetchMetrics}
+                  variant="network"
+                  title={t('metrics.title')}
+                  showRetryCount={true}
+                  maxRetries={3}
+                  size="medium"
+                />
+              )}
+
+              {/* Show message if device is offline */}
               {device.status === 'offline' && (
-                <span className="update-indicator offline">{t('metrics.offline')}</span>
+                <div className="text-center py-4 text-muted-foreground">
+                  <p className="text-sm">{t('metrics.offlineMessage')}</p>
+                </div>
               )}
-            </div>
 
-            {isLoadingMetrics && !metrics && (
-              <div className="metrics-loading">
-                <LoadingSpinner size="small" message={t('devices.loading')} />
-              </div>
-            )}
+              {metrics && metrics.length > 0 && device.status === 'online' && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {metrics[0].temperature !== undefined && (
+                    <Card>
+                      <CardContent className="flex items-center gap-2 p-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                          <Thermometer className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium text-muted-foreground">{t('metrics.temperature')}</p>
+                          <p className="text-lg font-bold">{metrics[0].temperature.toFixed(1)}°C</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-            {isMetricsError && (
-              <ErrorDisplay 
-                message={metricsError instanceof Error ? metricsError.message : 'Failed to load metrics'} 
-                onRetry={refetchMetrics}
-              />
-            )}
+                  {metrics[0].humidity !== undefined && (
+                    <Card>
+                      <CardContent className="flex items-center gap-2 p-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                          <Droplet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium text-muted-foreground">{t('metrics.humidity')}</p>
+                          <p className="text-lg font-bold">{metrics[0].humidity.toFixed(1)}%</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-            {/* Show message if device is offline */}
-            {device.status === 'offline' && (
-              <div className="no-metrics">
-                <p>{t('metrics.offlineMessage')}</p>
-              </div>
-            )}
+                  {metrics[0].pressure !== undefined && (
+                    <Card>
+                      <CardContent className="flex items-center gap-2 p-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/20">
+                          <Gauge className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium text-muted-foreground">{t('metrics.pressure')}</p>
+                          <p className="text-lg font-bold">{metrics[0].pressure.toFixed(0)} hPa</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-            {metrics && metrics.length > 0 && device.status === 'online' && (
-              <div className="metrics-grid">
-                {metrics[0].temperature !== undefined && (
-                  <div className="metric-card">
-                    <div className="metric-icon">
-                      <Thermometer size={20} />
-                    </div>
-                    <div className="metric-content">
-                      <span className="metric-label">{t('metrics.temperature')}</span>
-                      <span className="metric-value">{metrics[0].temperature.toFixed(1)}°C</span>
-                    </div>
-                  </div>
-                )}
+                  {metrics[0].batteryLevel !== undefined && (
+                    <Card>
+                      <CardContent className="flex items-center gap-2 p-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/20">
+                          <Battery className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium text-muted-foreground">{t('metrics.battery')}</p>
+                          <p className="text-lg font-bold">{metrics[0].batteryLevel.toFixed(0)}%</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
-                {metrics[0].humidity !== undefined && (
-                  <div className="metric-card">
-                    <div className="metric-icon">
-                      <Droplet size={20} />
-                    </div>
-                    <div className="metric-content">
-                      <span className="metric-label">{t('metrics.humidity')}</span>
-                      <span className="metric-value">{metrics[0].humidity.toFixed(1)}%</span>
-                    </div>
-                  </div>
-                )}
+                  {metrics[0].signalStrength !== undefined && (
+                    <Card>
+                      <CardContent className="flex items-center gap-2 p-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
+                          <Signal className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium text-muted-foreground">{t('metrics.signal')}</p>
+                          <p className="text-lg font-bold">{metrics[0].signalStrength.toFixed(0)} dBm</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
 
-                {metrics[0].pressure !== undefined && (
-                  <div className="metric-card">
-                    <div className="metric-icon">
-                      <Gauge size={20} />
-                    </div>
-                    <div className="metric-content">
-                      <span className="metric-label">{t('metrics.pressure')}</span>
-                      <span className="metric-value">{metrics[0].pressure.toFixed(0)} hPa</span>
-                    </div>
-                  </div>
-                )}
-
-                {metrics[0].batteryLevel !== undefined && (
-                  <div className="metric-card">
-                    <div className="metric-icon">
-                      <Battery size={20} />
-                    </div>
-                    <div className="metric-content">
-                      <span className="metric-label">{t('metrics.battery')}</span>
-                      <span className="metric-value">{metrics[0].batteryLevel.toFixed(0)}%</span>
-                    </div>
-                  </div>
-                )}
-
-                {metrics[0].signalStrength !== undefined && (
-                  <div className="metric-card">
-                    <div className="metric-icon">
-                      <Signal size={20} />
-                    </div>
-                    <div className="metric-content">
-                      <span className="metric-label">{t('metrics.signal')}</span>
-                      <span className="metric-value">{metrics[0].signalStrength.toFixed(0)} dBm</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {metrics && metrics.length === 0 && (
-              <div className="no-metrics">
-                <p>{t('metrics.noData')}</p>
-              </div>
-            )}
-          </div>
+              {metrics && metrics.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground">
+                  <p className="text-sm">{t('metrics.noData')}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Command Control Card */}
-          <div className="detail-card command-card">
-            <h2 className="card-title">{t('commands.title')}</h2>
-            <div className="command-buttons">
-              <button
-                className="command-button"
-                onClick={() => handleSendCommand('PING')}
-                disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.ping')}
-              >
-                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <Power size={18} />}
-                <span>{t('commands.ping')}</span>
-              </button>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">{t('commands.title')}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Button
+                  onClick={() => handleSendCommand('PING')}
+                  disabled={device.status !== 'online' || commandMutation.isPending}
+                  title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.ping')}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                >
+                  {commandMutation.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Power size={14} />
+                  )}
+                  <span className="text-xs">{t('commands.ping')}</span>
+                </Button>
 
-              <button
-                className="command-button"
-                onClick={() => handleSendCommand('REBOOT')}
-                disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.reboot')}
-              >
-                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <RefreshCw size={18} />}
-                <span>{t('commands.reboot')}</span>
-              </button>
+                <Button
+                  onClick={() => handleSendCommand('REBOOT')}
+                  disabled={device.status !== 'online' || commandMutation.isPending}
+                  title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.reboot')}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                >
+                  {commandMutation.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={14} />
+                  )}
+                  <span className="text-xs">{t('commands.reboot')}</span>
+                </Button>
 
-              <button
-                className="command-button"
-                onClick={() => handleSendCommand('VALVE_OPEN', { valve: 'primary' })}
-                disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.openValve')}
-              >
-                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <Settings size={18} />}
-                <span>{t('commands.openValve')}</span>
-              </button>
+                <Button
+                  onClick={() => handleSendCommand('VALVE_OPEN', { valve: 'primary' })}
+                  disabled={device.status !== 'online' || commandMutation.isPending}
+                  title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.openValve')}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                >
+                  {commandMutation.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Settings size={14} />
+                  )}
+                  <span className="text-xs">{t('commands.openValve')}</span>
+                </Button>
 
-              <button
-                className="command-button"
-                onClick={() => handleSendCommand('DIAGNOSTICS')}
-                disabled={device.status !== 'online' || commandMutation.isPending}
-                title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.diagnostics')}
-              >
-                {commandMutation.isPending ? <Loader2 size={18} className="spinning" /> : <AlertTriangle size={18} />}
-                <span>{t('commands.diagnostics')}</span>
-              </button>
-            </div>
-            {device.status !== 'online' && (
-              <p className="command-note">{t('commands.offlineNote')}</p>
-            )}
-            {commandMutation.isPending && (
-              <p className="command-note">{t('commands.sending')}</p>
-            )}
-          </div>
+                <Button
+                  onClick={() => handleSendCommand('DIAGNOSTICS')}
+                  disabled={device.status !== 'online' || commandMutation.isPending}
+                  title={device.status !== 'online' ? t('commands.tooltip.offline') : t('commands.tooltip.diagnostics')}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                >
+                  {commandMutation.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <AlertTriangle size={14} />
+                  )}
+                  <span className="text-xs">{t('commands.diagnostics')}</span>
+                </Button>
+              </div>
+
+              {device.status !== 'online' && (
+                <div className="mt-3 p-2 bg-muted rounded-md">
+                  <p className="text-xs text-muted-foreground">{t('commands.offlineNote')}</p>
+                </div>
+              )}
+              {commandMutation.isPending && (
+                <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                  <p className="text-xs text-blue-700 dark:text-blue-300">{t('commands.sending')}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

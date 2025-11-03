@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Mic } from 'lucide-react';
+import { Search, Mic, Wifi, WifiOff } from 'lucide-react';
 import { getDevices } from '../../api/client';
-import type { Device } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
+import EmptyState from '../../shared/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import './DeviceList.css';
 
 function DeviceList() {
@@ -53,10 +58,6 @@ function DeviceList() {
     setSearchQuery(e.target.value);
   };
 
-  const handleRetry = () => {
-    refetch();
-  };
-
   const handleVoiceSearch = () => {
     // Check if browser supports speech recognition
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -96,9 +97,7 @@ function DeviceList() {
     recognition.start();
   };
 
-  const getStatusBadgeClass = (status: Device['status']) => {
-    return status === 'online' ? 'status-badge online' : 'status-badge offline';
-  };
+
 
   const formatLastSeen = (lastSeen: string) => {
     const date = new Date(lastSeen);
@@ -117,45 +116,40 @@ function DeviceList() {
   };
 
   return (
-    <div className="device-list">
-      <div className="page-header">
-        <h1>{t('devices.title')}</h1>
-        <p className="page-description">
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">{t('devices.title')}</h1>
+        <p className="text-muted-foreground text-lg">
           {t('devices.description')}
         </p>
       </div>
 
       {/* Search Bar */}
-      <div className="search-bar">
-        <form onSubmit={(e) => e.preventDefault()} className="search-form">
-          <div className="search-input-wrapper">
-            <input
+      <Card className="p-6">
+        <div className="flex gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
               type="text"
-              name="search"
               placeholder={t('devices.search')}
               value={searchQuery}
               onChange={handleSearch}
-              className="search-input"
+              className="pl-10"
             />
           </div>
-          <button
-            type="submit"
-            className="search-button"
-            aria-label="Search"
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handleVoiceSearch}
+            disabled={isListening}
+            className={cn("gap-2", isListening && "animate-pulse")}
           >
-            <Search className="search-icon" size={20} />
-          </button>
-        </form>
-        
-        <button
-          className={`voice-button ${isListening ? 'listening' : ''}`}
-          aria-label={t('devices.voiceSearch')}
-          onClick={handleVoiceSearch}
-          title={isListening ? 'Listening...' : t('devices.voiceSearch')}
-        >
-          <Mic className="mic-icon" size={20} />
-        </button>
-      </div>
+            <Mic size={16} />
+            {t('devices.voiceSearch')}
+          </Button>
+        </div>
+      </Card>
 
       {/* Loading State */}
       {isLoading && (
@@ -165,8 +159,13 @@ function DeviceList() {
       {/* Error State */}
       {isError && (
         <ErrorDisplay 
-          message={error instanceof Error ? error.message : t('devices.error')} 
-          onRetry={handleRetry}
+          message={error instanceof Error ? error.message : t('error.network.message')} 
+          onRetry={refetch}
+          variant="network"
+          title={t('error.network.title')}
+          showRetryCount={true}
+          maxRetries={3}
+          size="large"
         />
       )}
 
@@ -174,75 +173,89 @@ function DeviceList() {
       {!isLoading && !isError && devices && (
         <>
           {devices.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📭</div>
-              <h3>{t('devices.noResults')}</h3>
-              <p>
-                {searchQuery 
-                  ? `No devices match "${searchQuery}"`
-                  : 'No devices available'}
-              </p>
-            </div>
+            <EmptyState
+              variant={searchQuery ? 'search' : 'default'}
+              title={searchQuery ? t('empty.search.title') : t('devices.noResults')}
+              message={searchQuery 
+                ? t('empty.search.message') 
+                : t('empty.default.message')
+              }
+              actionLabel={searchQuery ? t('empty.action.secondary') : t('empty.action.primary')}
+              onAction={searchQuery 
+                ? () => { setSearchQuery(''); setDebouncedQuery(''); }
+                : () => refetch()
+              }
+              size="large"
+            />
           ) : (
-            <div className="devices-grid">
-              {devices.map((device) => (
-                <div 
-                  key={device.id} 
-                  className="device-card"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {devices!.map((device) => (
+                <Card 
+                  key={device.id}
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
                   onClick={() => navigate(`/devices/${device.id}`)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      navigate(`/devices/${device.id}`);
-                    }
-                  }}
                 >
-                  <div className="device-header">
-                    <h3 className="device-name">{t(`deviceName.${device.name}`, device.name)}</h3>
-                    <span className={getStatusBadgeClass(device.status)}>
-                      {t(`devices.${device.status}`)}
-                    </span>
-                  </div>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg leading-none">
+                          {t(`deviceName.${device.name}`, device.name)}
+                        </CardTitle>
+                        <CardDescription className="text-sm">
+                          {t(`deviceType.${device.type}`, device.type)}
+                        </CardDescription>
+                      </div>
+                      <Badge 
+                        variant={device.status === 'online' ? 'success' : 'destructive'}
+                        className="flex items-center gap-1"
+                      >
+                        {device.status === 'online' ? 
+                          <Wifi className="h-3 w-3" /> : 
+                          <WifiOff className="h-3 w-3" />
+                        }
+                        {t(`devices.${device.status}`)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
                   
-                  <div className="device-info">
-                    <div className="info-row">
-                      <span className="info-label">{t('detail.type')}:</span>
-                      <span className="info-value">{t(`deviceType.${device.type}`, device.type)}</span>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>📍</span>
+                      <span>{t(`location.${device.location}`, device.location)}</span>
                     </div>
-                    <div className="info-row">
-                      <span className="info-label">{t('detail.location')}:</span>
-                      <span className="info-value">{t(`location.${device.location}`, device.location)}</span>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>⏰</span>
+                      <span>{t('detail.lastSeen')}: {formatLastSeen(device.lastSeen)}</span>
                     </div>
-                    <div className="info-row">
-                      <span className="info-label">{t('detail.lastSeen')}:</span>
-                      <span className="info-value">{formatLastSeen(device.lastSeen)}</span>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
 
-          {/* Pagination - Always show when not on first page or when there are devices */}
-          {(currentPage > 1 || devices.length > 0) && (
-            <div className="pagination">
-              <button
-                className="pagination-button"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                {t('devices.previous')}
-              </button>
-              <span className="pagination-info">{t('devices.page')} {currentPage}</span>
-              <button
-                className="pagination-button"
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                disabled={devices.length === 0}
-              >
-                {t('devices.next')}
-              </button>
-            </div>
+          {/* Pagination */}
+          {(currentPage > 1 || devices!.length > 0) && (
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  {t('devices.previous')}
+                </Button>
+                <span className="text-sm font-medium">
+                  {t('devices.page')} {currentPage}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={devices!.length === 0}
+                >
+                  {t('devices.next')}
+                </Button>
+              </div>
+            </Card>
           )}
         </>
       )}

@@ -1,47 +1,167 @@
+/* Enhanced Error Display Component */
 .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
+  padding: var(--spacing-xl);
   text-align: center;
-  background-color: #fef2f2;
-  border-radius: 8px;
-  border: 1px solid #fecaca;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid;
+  background: var(--bg-secondary);
+  margin: var(--spacing-lg);
+}
+
+/* Size Variants */
+.error-small {
+  padding: var(--spacing-lg);
+}
+
+.error-large {
+  padding: var(--spacing-xxl);
+  min-height: 300px;
+}
+
+/* Color Variants */
+.error-error {
+  background: var(--error-bg);
+  border-color: var(--error-color);
+}
+
+.error-warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-color);
+}
+
+.error-network {
+  background: var(--info-bg);
+  border-color: var(--info-color);
+}
+
+.error-info {
+  background: var(--info-bg);
+  border-color: var(--info-color);
 }
 
 .error-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.error-error .error-icon {
+  color: var(--error-color);
+}
+
+.error-warning .error-icon {
+  color: var(--warning-color);
+}
+
+.error-network .error-icon {
+  color: var(--info-color);
+}
+
+.error-info .error-icon {
+  color: var(--info-color);
 }
 
 .error-title {
-  color: #991b1b;
-  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-primary);
+}
+
+.error-small .error-title {
+  font-size: 1.25rem;
+}
+
+.error-large .error-title {
+  font-size: 2rem;
 }
 
 .error-message {
-  color: #dc2626;
-  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
   max-width: 500px;
+  line-height: 1.6;
+}
+
+.retry-count {
+  font-size: 0.9rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-md);
 }
 
 .retry-button {
-  background-color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  margin-bottom: var(--spacing-md);
 }
 
-.retry-button:hover {
-  background-color: #b91c1c;
+.retry-button:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .retry-button:active {
-  transform: scale(0.98);
+  transform: translateY(-1px);
+}
+
+.retry-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.retry-button.retrying {
+  background: var(--text-tertiary);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.max-retries-message {
+  font-size: 0.9rem;
+  color: var(--error-color);
+  font-weight: 500;
+  margin-top: var(--spacing-sm);
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .error-container {
+    margin: var(--spacing-md);
+    padding: var(--spacing-lg);
+  }
+  
+  .error-title {
+    font-size: 1.25rem;
+  }
+  
+  .retry-button {
+    width: 100%;
+    justify-content: center;
+  }
 }

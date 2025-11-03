@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn/ui CSS Variables */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    
+    /* Custom IoT Theme Colors */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 32.2 94.6% 43.7%;
+    --warning-foreground: 355.7 100% 97.3%;
+    --info: 199.89 89.47% 49.8%;
+    --info-foreground: 355.7 100% 97.3%;
+    
+    /* Legacy CSS Variables for backward compatibility */
+    --bg-primary: hsl(var(--background));
+    --bg-secondary: hsl(var(--muted));
+    --bg-hover: hsl(var(--accent));
+    --text-primary: hsl(var(--foreground));
+    --text-secondary: hsl(var(--muted-foreground));
+    --text-tertiary: hsl(215.4 16.3% 46.9% / 0.7);
+    --border-color: hsl(var(--border));
+    --border-hover: hsl(var(--border));
+    --primary-color: hsl(var(--primary));
+    --primary-hover: hsl(221.2 83.2% 45.3%);
+    --success-color: hsl(var(--success));
+    --success-bg: hsl(142.1 76.2% 36.3% / 0.1);
+    --success-text: hsl(var(--success-foreground));
+    --error-color: hsl(var(--destructive));
+    --error-bg: hsl(0 84.2% 60.2% / 0.1);
+    --error-text: hsl(var(--destructive-foreground));
+    --warning-color: hsl(var(--warning));
+    --warning-bg: hsl(32.2 94.6% 43.7% / 0.1);
+    --warning-text: hsl(var(--warning-foreground));
+    --info-color: hsl(var(--info));
+    --info-bg: hsl(199.89 89.47% 49.8% / 0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+    
+    /* Border Radius */
+    --border-radius: 6px;
+    --border-radius-lg: 12px;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    
+    /* Custom IoT Theme Colors Dark */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 35.5 91.7% 32.9%;
+    --warning-foreground: 20.9 95.3% 90.4%;
+    --info: 199.89 89.47% 49.8%;
+    --info-foreground: 215.4 16.3% 6.9%;
+    
+    /* Legacy CSS Variables Dark */
+    --bg-primary: hsl(var(--background));
+    --bg-secondary: hsl(var(--muted));
+    --bg-hover: hsl(var(--accent));
+    --text-primary: hsl(var(--foreground));
+    --text-secondary: hsl(var(--muted-foreground));
+    --text-tertiary: hsl(215 20.2% 65.1% / 0.7);
+    --border-color: hsl(var(--border));
+    --border-hover: hsl(var(--border));
+    --primary-color: hsl(var(--primary));
+    --primary-hover: hsl(217.2 91.2% 50.8%);
+    --success-color: hsl(var(--success));
+    --success-bg: hsl(142.1 70.6% 45.3% / 0.2);
+    --success-text: hsl(var(--success-foreground));
+    --error-color: hsl(var(--destructive));
+    --error-bg: hsl(0 62.8% 30.6% / 0.2);
+    --error-text: hsl(var(--destructive-foreground));
+    --warning-color: hsl(var(--warning));
+    --warning-bg: hsl(35.5 91.7% 32.9% / 0.2);
+    --warning-text: hsl(var(--warning-foreground));
+    --info-color: hsl(var(--info));
+    --info-bg: hsl(199.89 89.47% 49.8% / 0.2);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom styles for legacy components */
+  #root {
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground font-semibold;
+  }
+
+  /* Smooth transitions for theme changes */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+}
