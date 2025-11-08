@@ -10,6 +10,16 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic'
   },
+  android: {
+    buildOptions: {
+      keystorePath: undefined, // Will be set by CI if needed
+      keystorePassword: undefined,
+      keystoreAlias: undefined,
+      keystoreAliasPassword: undefined,
+      releaseType: 'AAB', // Android App Bundle
+      signingType: 'apksigner'
+    }
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
