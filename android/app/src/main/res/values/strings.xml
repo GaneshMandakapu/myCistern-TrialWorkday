@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">myCistern IoT</string>
+    <string name="title_activity_main">myCistern IoT</string>
+    <string name="package_name">com.mycistern.iot</string>
+    <string name="custom_url_scheme">com.mycistern.iot</string>
+</resources>

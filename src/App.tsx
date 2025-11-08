@@ -6,6 +6,8 @@ import Home from './app/Home';
 import DeviceList from './features/devices/DeviceList';
 import DeviceDetail from './features/devices/DeviceDetail';
 import CookiePolicy from './pages/CookiePolicy';
+import SettingsPage from './pages/SettingsPage';
+import AboutPage from './pages/AboutPage';
 import NotFound from './shared/components/NotFound';
 import ErrorBoundary from './shared/components/ErrorBoundary';
 
@@ -29,6 +31,8 @@ function App() {
               <Route index element={<Home />} />
               <Route path="devices" element={<DeviceList />} />
               <Route path="devices/:id" element={<DeviceDetail />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="about" element={<AboutPage />} />
               <Route path="cookies" element={<CookiePolicy />} />
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFound />} />

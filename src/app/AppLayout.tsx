@@ -4,16 +4,26 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '../shared/components/ThemeToggle';
 import CookieBanner from '../shared/components/CookieBanner';
+import MobileStatusBar from '../components/mobile/MobileStatusBar';
+import MobileTabBar from '../components/mobile/MobileTabBar';
 import { useCookieConsent } from '../hooks/useCookieConsent';
+import { useCapacitor } from '../hooks/useCapacitor';
 
 function AppLayout() {
   const { t } = useTranslation();
   const location = useLocation();
   const { acceptAllCookies, rejectAllCookies } = useCookieConsent();
+  const { isNative } = useCapacitor();
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Mobile Status Bar - Only shown on native mobile apps */}
+      <MobileStatusBar />
+      
+      {/* Desktop/Web Header - Hidden on mobile when native */}
+      <header className={`sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
+        isNative ? 'hidden' : 'block'
+      }`}>
         <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4">
           <div className="flex items-center space-x-4 md:space-x-8 min-w-0 flex-1">
             <Link to="/" className="flex items-center space-x-2 shrink-0">
@@ -49,11 +59,14 @@ function AppLayout() {
         </div>
       </header>
       
-      <main className="flex-1">
+      <main className={`flex-1 ${isNative ? 'pb-safe' : ''}`}>
         <Outlet />
       </main>
       
-      <footer className="border-t border-border/40 py-6 md:py-0">
+      {/* Desktop Footer - Hidden on mobile when native */}
+      <footer className={`border-t border-border/40 py-6 md:py-0 ${
+        isNative ? 'hidden' : 'block'
+      }`}>
         <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row px-4">
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
@@ -70,12 +83,17 @@ function AppLayout() {
         </div>
       </footer>
       
-      {/* Cookie Banner */}
-      <CookieBanner 
-        onAccept={acceptAllCookies}
-        onReject={rejectAllCookies}
-        onManage={() => console.log('Opening cookie preferences')}
-      />
+      {/* Mobile Tab Bar - Only shown on native mobile apps */}
+      {isNative && <MobileTabBar />}
+      
+      {/* Cookie Banner - Only show on web */}
+      {!isNative && (
+        <CookieBanner 
+          onAccept={acceptAllCookies}
+          onReject={rejectAllCookies}
+          onManage={() => console.log('Opening cookie preferences')}
+        />
+      )}
     </div>
   );
 }

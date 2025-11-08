@@ -1,0 +1,62 @@
+name: myCistern IoT Build
+
+# Triggered on pushes to main/mobile branches
+trigger:
+  - main
+  - mobile
+
+# Build configuration for different platforms
+jobs:
+  - name: web-build
+    platform: web
+    steps:
+      - name: Install Dependencies
+        action: npm
+        inputs:
+          command: ci
+      - name: Build Web App
+        action: npm
+        inputs:
+          command: run build
+
+  - name: ios-build
+    platform: ios
+    steps:
+      - name: Install Dependencies
+        action: npm
+        inputs:
+          command: ci
+      - name: Build Mobile App
+        action: npm
+        inputs:
+          command: run build:mobile
+      - name: Capacitor Sync
+        action: capacitor
+        inputs:
+          command: sync ios
+      - name: Build iOS App
+        action: xcode
+        inputs:
+          scheme: App
+          configuration: Release
+
+  - name: android-build
+    platform: android
+    steps:
+      - name: Install Dependencies
+        action: npm
+        inputs:
+          command: ci
+      - name: Build Mobile App
+        action: npm
+        inputs:
+          command: run build:mobile
+      - name: Capacitor Sync
+        action: capacitor
+        inputs:
+          command: sync android
+      - name: Build Android App
+        action: gradle
+        inputs:
+          gradlew: android/gradlew
+          tasks: assembleRelease

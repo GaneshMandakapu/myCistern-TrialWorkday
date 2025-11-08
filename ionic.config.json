@@ -1,0 +1,8 @@
+{
+  "name": "myCistern IoT",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react",
+  "id": "683daffc"
+}

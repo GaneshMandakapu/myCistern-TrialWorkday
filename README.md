@@ -1,6 +1,15 @@
 # myCistern IoT Device Management
 
-React + TypeScript web app for managing IoT devices with real-time monitoring.
+React + TypeScript **hybrid mobile & web app** for managing IoT devices with real-time monitoring.
+
+## 📱 Multi-Platform Support
+
+**🎉 Now available on multiple platforms:**
+- **📱 iOS Native App** (iPhone/iPad)
+- **🤖 Android Native App** (phones/tablets)
+- **🌐 Web Browser** (desktop/mobile web)
+
+*Single codebase, multiple platforms!*
 
 ## Features
 
@@ -8,16 +17,44 @@ React + TypeScript web app for managing IoT devices with real-time monitoring.
 - Real-time metrics and status monitoring  
 - Device command interface
 - Dark/light theme with German/English support
-- Mobile-responsive design
+- **Native mobile app with device integration**
+- **Adaptive UI for mobile and web**
 - Mock API for development
 
 ## Tech Stack
 
 - React 18 + TypeScript + Vite
+- **Capacitor for mobile app development**
 - TanStack Query for data fetching
 - Tailwind CSS + shadcn/ui components
 - React Router for navigation
 - i18next for translations
+
+## 🚀 Quick Start
+
+### Web Development
+```bash
+# Clone and install
+git clone https://github.com/GaneshMandakapu/myCistern-TrialWorkday.git
+cd myCistern-TrialWorkday
+npm install
+
+# Start development server
+npm run dev
+# Visit http://localhost:5173
+```
+
+### 📱 Mobile Development
+```bash
+# Build and sync mobile platforms
+npm run build:mobile
+
+# Open iOS app in Xcode (macOS only)
+npm run ios
+
+# Open Android app in Android Studio  
+npm run android
+```
 
 ## 📁 Project Structure
 
