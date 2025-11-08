@@ -2,64 +2,154 @@ import { Outlet } from 'react-router-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Logo from '@/components/ui/logo';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ThemeToggle from '../shared/components/ThemeToggle';
 import CookieBanner from '../shared/components/CookieBanner';
 import MobileStatusBar from '../components/mobile/MobileStatusBar';
 import MobileTabBar from '../components/mobile/MobileTabBar';
+import MobileNavMenu from '../components/mobile/MobileNavMenu';
 import { useCookieConsent } from '../hooks/useCookieConsent';
 import { useCapacitor } from '../hooks/useCapacitor';
+import { useAuth, useRole } from '../context/AuthContext';
+import { LogOut, Settings, BarChart3, Activity, Monitor } from 'lucide-react';
 
 function AppLayout() {
   const { t } = useTranslation();
   const location = useLocation();
   const { acceptAllCookies, rejectAllCookies } = useCookieConsent();
   const { isNative } = useCapacitor();
+  const { user, logout } = useAuth();
+  const { isAdmin, canView } = useRole();
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Mobile Status Bar - Only shown on native mobile apps */}
       <MobileStatusBar />
       
-      {/* Desktop/Web Header - Hidden on mobile when native */}
+      {/* Optimized Header with Hamburger Menu */}
       <header className={`sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${
         isNative ? 'hidden' : 'block'
       }`}>
-        <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4">
-          <div className="flex items-center space-x-4 md:space-x-8 min-w-0 flex-1">
-            <Link to="/" className="flex items-center space-x-2 shrink-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <span className="text-sm font-bold">mC</span>
-              </div>
-              <span className="text-lg md:text-xl font-bold tracking-tight">myCistern</span>
-            </Link>
+        <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
+          {/* Mobile Layout */}
+          <div className="flex items-center space-x-3 md:hidden w-full">
+            <MobileNavMenu />
+            <div className="flex-1 flex justify-center">
+              <Logo size="md" linkTo="/dashboard" />
+            </div>
+            <div className="w-8"> {/* Spacer for balance */}</div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex items-center space-x-8 min-w-0 flex-1">
+            <Logo size="md" linkTo="/dashboard" className="shrink-0" />
             
-            <nav className="flex items-center space-x-1 sm:space-x-2 min-w-0">
+            <nav className="flex items-center space-x-2 min-w-0">
               <Button
                 asChild
-                variant={location.pathname === '/' ? 'default' : 'ghost'}
+                variant={location.pathname === '/dashboard' ? 'default' : 'ghost'}
                 size="sm"
-                className="text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Link to="/">{t('nav.home')}</Link>
+                <Link to="/dashboard">
+                  <Activity className="h-4 w-4 mr-2" />
+                  {t('nav.dashboard')}
+                </Link>
               </Button>
+              
+              {canView && (
+                <Button
+                  asChild
+                  variant={location.pathname === '/analytics' ? 'default' : 'ghost'}
+                  size="sm"
+                >
+                  <Link to="/analytics">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    {t('nav.analytics')}
+                  </Link>
+                </Button>
+              )}
+              
               <Button
                 asChild
                 variant={location.pathname.startsWith('/devices') ? 'default' : 'ghost'}
                 size="sm"
-                className="text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Link to="/devices">{t('nav.devices')}</Link>
+                <Link to="/devices">
+                  <Monitor className="h-4 w-4 mr-2" />
+                  {t('nav.devices')}
+                </Link>
               </Button>
             </nav>
           </div>
           
-          <div className="shrink-0">
+          {/* Desktop User Menu */}
+          <div className="hidden md:flex items-center space-x-4 shrink-0">
+            {user && (
+              <>
+                {isAdmin && (
+                  <Badge variant="outline">
+                    Admin
+                  </Badge>
+                )}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar} alt={user.firstName} />
+                        <AvatarFallback>
+                          {user.firstName[0]}{user.lastName[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.email}
+                        </p>
+                        <Badge variant="outline" className="w-fit capitalize">
+                          {user.role}
+                        </Badge>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>{t('nav.settings')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="text-red-600">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+            
             <ThemeToggle />
           </div>
         </div>
       </header>
       
-      <main className={`flex-1 ${isNative ? 'pb-safe' : ''}`}>
+      <main className="flex-1 pb-20">
         <Outlet />
       </main>
       

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Mic, Wifi, WifiOff } from 'lucide-react';
+import { Search, Mic, Wifi, WifiOff, Filter } from 'lucide-react';
 import { getDevices, type Device } from '../../api/client';
 import LoadingSpinner from '../../shared/components/LoadingSpinner';
 import ErrorDisplay from '../../shared/components/ErrorDisplay';
@@ -12,18 +12,24 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useCapacitor } from '@/hooks/useCapacitor';
+import { useToast } from '@/hooks/use-toast';
 
 function DeviceList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isNative } = useCapacitor();
+  const { toast } = useToast();
   
   // Initialize state from URL params
   const urlQuery = searchParams.get('q') || '';
   const urlPage = Number(searchParams.get('page')) || 1;
+  const urlStatus = searchParams.get('status') || 'all';
   
   const [searchQuery, setSearchQuery] = useState(urlQuery);
   const [currentPage, setCurrentPage] = useState(urlPage);
+  const [statusFilter, setStatusFilter] = useState(urlStatus);
   const [debouncedQuery, setDebouncedQuery] = useState(urlQuery);
   const [isListening, setIsListening] = useState(false);
 
@@ -39,25 +45,49 @@ function DeviceList() {
     return () => clearTimeout(timer);
   }, [searchQuery, debouncedQuery]);
 
-  // Update URL when search or page changes
+  // Update URL when search, filter or page changes
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQuery) params.set('q', debouncedQuery);
+    if (statusFilter !== 'all') params.set('status', statusFilter);
     if (currentPage > 1) params.set('page', currentPage.toString());
     setSearchParams(params, { replace: true });
-  }, [debouncedQuery, currentPage, setSearchParams]);
+  }, [debouncedQuery, statusFilter, currentPage, setSearchParams]);
 
   // Fetch devices using React Query
-  const { data: devices, isLoading, isError, error, refetch } = useQuery({
+  const { data: allDevices, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['devices', debouncedQuery, currentPage],
     queryFn: () => getDevices(debouncedQuery, currentPage),
   });
+
+  // Filter devices based on status
+  const devices = allDevices?.filter((device: Device) => {
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'online') return device.status === 'online';
+    if (statusFilter === 'offline') return device.status === 'offline';
+    return true;
+  }) || [];
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
+  const handleStatusFilter = (status: string) => {
+    setStatusFilter(status);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
   const handleVoiceSearch = () => {
+    // Check if we're in a native mobile app
+    if (isNative) {
+      toast({
+        title: t('devices.voiceSearch'),
+        description: "Voice search is not available in the mobile app. Please use the text search instead.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Check if browser supports speech recognition
     interface WindowWithSpeechRecognition extends Window {
       SpeechRecognition?: unknown;
@@ -68,18 +98,26 @@ function DeviceList() {
     const SpeechRecognitionClass = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
     
     if (!SpeechRecognitionClass) {
-      alert('Voice search is not supported in your browser. Please try Chrome, Edge, or Safari.');
+      toast({
+        title: "Voice Search Unavailable",
+        description: "Voice search is not supported in your browser. Please try Chrome, Edge, or Safari.",
+        variant: "destructive",
+      });
       return;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const recognition = new (SpeechRecognitionClass as any)();
-    recognition.lang = 'en-US';
+    recognition.lang = i18n.language === 'de' ? 'de-DE' : 'en-US'; // Use current language
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       setIsListening(true);
+      toast({
+        title: t('devices.voiceSearch'),
+        description: "Listening... Please speak your search query.",
+      });
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,6 +125,10 @@ function DeviceList() {
       const transcript = event.results[0][0].transcript;
       setSearchQuery(transcript);
       setIsListening(false);
+      toast({
+        title: "Search Query Recognized",
+        description: `Searching for: "${transcript}"`,
+      });
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,7 +136,17 @@ function DeviceList() {
       console.error('Speech recognition error:', event.error);
       setIsListening(false);
       if (event.error === 'not-allowed') {
-        alert('Microphone access denied. Please enable microphone permissions in your browser settings.');
+        toast({
+          title: "Microphone Access Denied",
+          description: "Please enable microphone permissions in your browser settings.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Voice Recognition Error",
+          description: `Error: ${event.error}. Please try again.`,
+          variant: "destructive",
+        });
       }
     };
 
@@ -135,7 +187,7 @@ function DeviceList() {
 
       {/* Search Bar */}
       <Card className="p-6">
-        <div className="flex gap-4">
+        <div className="flex gap-4 mb-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -157,7 +209,64 @@ function DeviceList() {
             {t('devices.voiceSearch')}
           </Button>
         </div>
+        
+        {/* Status Filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-muted-foreground">{t('devices.filter')}:</span>
+          <div className="flex gap-2">
+            <Button
+              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleStatusFilter('all')}
+              className="gap-1"
+            >
+              {t('devices.all')}
+            </Button>
+            <Button
+              variant={statusFilter === 'online' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleStatusFilter('online')}
+              className="gap-1"
+            >
+              <Wifi className="h-3 w-3" />
+              {t('devices.online')}
+            </Button>
+            <Button
+              variant={statusFilter === 'offline' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleStatusFilter('offline')}
+              className="gap-1"
+            >
+              <WifiOff className="h-3 w-3" />
+              {t('devices.offline')}
+            </Button>
+          </div>
+        </div>
       </Card>
+
+      {/* Device Count Display */}
+      {!isLoading && !isError && devices && (
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>
+            {t('devices.showingResults', { 
+              count: devices.length, 
+              total: allDevices?.length || 0,
+              filter: statusFilter === 'all' ? t('devices.all').toLowerCase() : t(`devices.${statusFilter}`)
+            })}
+          </span>
+          {statusFilter !== 'all' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleStatusFilter('all')}
+              className="text-xs"
+            >
+              {t('devices.clearFilter')}
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Loading State */}
       {isLoading && (

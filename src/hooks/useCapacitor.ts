@@ -32,6 +32,11 @@ export const useCapacitor = () => {
       setIsNative(native);
 
       if (native) {
+        // Configure status bar properly
+        await StatusBar.setStyle({ style: Style.Default });
+        await StatusBar.setBackgroundColor({ color: '#ffffff' });
+        await StatusBar.setOverlaysWebView({ overlay: false });
+
         // Hide splash screen after app initialization
         await SplashScreen.hide();
 

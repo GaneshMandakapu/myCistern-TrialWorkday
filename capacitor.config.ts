@@ -7,24 +7,27 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
+  ios: {
+    contentInset: 'automatic'
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: "#ffffffff",
-      androidSplashResourceName: "splash",
-      androidScaleType: "CENTER_CROP",
+      backgroundColor: "#2D3748",
       showSpinner: false,
-      androidSpinnerStyle: "large",
-      iosSpinnerStyle: "small",
-      spinnerColor: "#999999",
       splashFullScreen: true,
       splashImmersive: true,
-      layoutName: "launch_screen",
-      useDialog: true,
     },
     StatusBar: {
-      style: "default"
+      style: "default",
+      backgroundColor: "#ffffff",
+      overlaysWebView: false
+    },
+    Keyboard: {
+      resize: "body",
+      style: "light",
+      resizeOnFullScreen: true
     }
   }
 };

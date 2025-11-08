@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- myCistern dark theme colors -->
+    <color name="color_primary">#1A202C</color>
+    <color name="color_primary_dark">#1A202C</color>
+    <color name="color_accent">#3182CE</color>
+    
+    <!-- Status bar and navigation bar -->
+    <color name="colorPrimaryDark">#1A202C</color>
+    <color name="colorAccent">#3182CE</color>
+    
+    <!-- Background colors for dark mode -->
+    <color name="background_color">#1A202C</color>
+    <color name="surface_color">#2D3748</color>
+</resources>
