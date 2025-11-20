@@ -4,8 +4,8 @@ React + TypeScript hybrid mobile & web app for IoT device monitoring.
 
 ## 🚀 Live Demo
 
-- **📱 Mobile Preview (iOS/Android)**: https://dashboard.ionicframework.com/preview/683daffc/ammjvi8bg0
-- **🌐 Web App**: https://kkdwaku7b7.appflowapp.com/
+- **📱 Mobile Preview (iOS/Android)**: https://dashboard.ionicframework.com/app/683daffc/preview/10580759
+- **🌐 Web App**: https://56iprrz1m8.appflowapp.com/
 
 *Built and deployed with Ionic Appflow*
 
